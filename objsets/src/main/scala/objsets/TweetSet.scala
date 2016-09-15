@@ -65,7 +65,9 @@ abstract class TweetSet {
     * Question: Should we implment this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def mostRetweeted: Tweet
+  def mostRetweeted: Tweet = mostRetweetedAcc(0, this)
+
+  def mostRetweetedAcc(mostRetweetedCount: Int, acc: TweetSet): TweetSet
 
   /**
     * Returns a list containing all tweets of this set, sorted by retweet count
@@ -111,6 +113,8 @@ class Empty extends TweetSet {
 
   def union(that: TweetSet) = that
 
+  def mostRetweetedAcc(mostRetweetedCount: Int, acc: TweetSet) = acc
+
   override def toString: String = "."
 
   /**
@@ -137,6 +141,11 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   }
 
   def union(that: TweetSet) = left union that union right incl elem
+
+//  def mostRetweetedAcc(mostRetweetCount: Int, tweets: TweetSet): TweetSet = {
+//    mostRetweetedAcc( mostRetweetedAcc(mostRetweetCount, left)
+//    if(this.elem.retweets > mostRetweetCount)
+//  }
 
   override def toString: String = "{" + left + elem + right + "}"
 
