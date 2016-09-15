@@ -101,12 +101,88 @@ class FunSetSuite extends FunSuite {
     }
   }
 
+  test("rangeSet(2,4) contains 3") {
+    new TestSets {
+      assert(contains(rangeSet(2,4), 3), "Range")
+    }
+  }
+
   test("union contains all elements of each set") {
     new TestSets {
       val s = union(s1, s2)
       assert(contains(s, 1), "Union 1")
       assert(contains(s, 2), "Union 2")
       assert(!contains(s, 3), "Union 3")
+    }
+  }
+
+  test("intersect contains common elements in both sets") {
+    new TestSets {
+      val s = union(s1, s2)
+      val t = union(s2, s3)
+      val i = intersect(s, t)
+      assert(!contains(i, 1), "Intersect 1")
+      assert(contains(i, 2), "Intersect 2")
+      assert(!contains(i, 3), "Intersect 3")
+    }
+  }
+
+  test("difference contains elements in the first set, not in the second set") {
+    new TestSets {
+      val s = union(s1, s2)
+      val t = union(s2, s3)
+      val d = diff(s, t)
+      assert(contains(d, 1), "Diff 1")
+      assert(!contains(d, 2), "Diff 2")
+      assert(!contains(d, 3), "Diff 3")
+    }
+  }
+
+  test("filter yields elements in the set that satisfy a condition") {
+    new TestSets {
+      val s = union(s1, s2)
+      val p = singletonSet(2)
+      val f = filter(s, p)
+      assert(!contains(f, 1), "Filter 1")
+      assert(contains(f, 2), "Filter 2")
+      assert(!contains(f, 3), "Filter 3")
+    }
+  }
+
+  test("forall returns whether all bounded integers satisfy p") {
+    new TestSets {
+      val bound = 1000
+      val s = rangeSet(-bound, bound)
+      val t = rangeSet(0,9)
+//      assert(!forall(s, x => false), "forall x, false")
+      assert(!forall(t, x => true), "forall t, true")
+      assert(forall(s, x => true), "forall x, true")
+    }
+  }
+
+  test("exists returns whether any bounded integers satisfy p") {
+    new TestSets {
+      val bound = 1000
+      val s = rangeSet(-bound, bound)
+      val t = rangeSet(0,9)
+      val p = singletonSet(2)
+      assert(!exists(s, x => false), "exists x, false")
+      assert(exists(t, x => true), "exists t, true")
+      assert(exists(s, x => true), "exists s, true")
+      assert(exists(t, p), "exists t in p, true")
+    }
+  }
+
+  test("map transforms x and applies s") {
+    new TestSets {
+      val s = union(s1, s2)
+      val f = (x: Int) => x * 2
+//      printSet(s)
+      val m = map(s, f)
+//      printSet(m)
+      assert(!contains(m, 1), "Map 1")
+      assert(contains(m, 2), "Map 2")
+      assert(!contains(m, 3), "Map 3")
     }
   }
 
