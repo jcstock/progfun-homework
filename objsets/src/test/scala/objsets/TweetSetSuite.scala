@@ -17,6 +17,9 @@ class TweetSetSuite extends FunSuite {
     val set4c = set3.incl(c)
     val set4d = set3.incl(d)
     val set5 = set4c.incl(d)
+    val set6 = new NonEmpty(c, new Empty, new Empty)
+    val set7 = new NonEmpty(d, set2, new Empty)
+    val set8 = set6.union(set7).incl(new Tweet("z", "z body", 50))
   }
 
   def asSet(tweets: TweetSet): Set[Tweet] = {
@@ -60,6 +63,56 @@ class TweetSetSuite extends FunSuite {
   test("union: with empty set (2)") {
     new TestSets {
       assert(size(set1.union(set5)) === 4)
+    }
+  }
+
+  test("maxRetweets: with empty set(1)") {
+    new TestSets {
+      try
+        assert(set1.mostRetweeted === Nil)
+      catch {
+        case ex: NoSuchElementException => println("caught expected error")
+      }
+    }
+  }
+
+  test("maxRetweets: with set(2)") {
+    new TestSets {
+      try {
+        assert(set2.mostRetweeted.retweets === 20)
+      } catch {
+        case ex: NoSuchElementException => println("caught unexpected error")
+      }
+    }
+  }
+
+  test("maxRetweets: with set(3)") {
+    new TestSets {
+      try {
+        assert(set3.mostRetweeted.retweets === 20)
+      } catch {
+        case ex: NoSuchElementException => println("caught unexpected error")
+      }
+    }
+  }
+
+  test("maxRetweets: with set(5)") {
+    new TestSets {
+      try {
+        assert(set3.mostRetweeted.retweets === 20)
+      } catch {
+        case ex: NoSuchElementException => println("caught unexpected error")
+      }
+    }
+  }
+
+  test("maxRetweets: with set(8)") {
+    new TestSets {
+      try {
+        assert(set8.mostRetweeted.retweets === 50)
+      } catch {
+        case ex: NoSuchElementException => println("caught unexpected error")
+      }
     }
   }
 

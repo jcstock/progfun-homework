@@ -62,12 +62,14 @@ abstract class TweetSet {
     * Calling `mostRetweeted` on an empty set should throw an exception of
     * type `java.util.NoSuchElementException`.
     *
-    * Question: Should we implment this method here, or should it remain abstract
+    * Question: Should we implement this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def mostRetweeted: Tweet = mostRetweetedAcc(0, this)
+  def mostRetweeted: Tweet
 
-  def mostRetweetedAcc(mostRetweetedCount: Int, acc: TweetSet): TweetSet
+  /**
+    * Helper method for mostRetweeted */
+  def mostRetweetedAcc(currMax: Tweet): Tweet
 
   /**
     * Returns a list containing all tweets of this set, sorted by retweet count
@@ -75,10 +77,20 @@ abstract class TweetSet {
     * have the highest retweet count.
     *
     * Hint: the method `remove` on TweetSet will be very useful.
-    * Question: Should we implment this method here, or should it remain abstract
+    * Question: Should we implement this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def descendingByRetweet: TweetList = ???
+  def descendingByRetweet: TweetList = {
+    def descByRetweetAcc(list: TweetList, acc: TweetSet): TweetList = {
+//      println("list: ", list)
+//      println("acc: ", acc)
+      if (acc.isInstanceOf[Empty]) list
+      else descByRetweetAcc(list append acc.mostRetweeted, acc.remove(acc.mostRetweeted))
+    }
+//    println("this: ", this)
+    descByRetweetAcc(Nil, this)
+  }
+
 
   /**
     * The following methods are already implemented
@@ -113,7 +125,20 @@ class Empty extends TweetSet {
 
   def union(that: TweetSet) = that
 
-  def mostRetweetedAcc(mostRetweetedCount: Int, acc: TweetSet) = acc
+  def mostRetweeted: Tweet = throw new NoSuchElementException("Empty TweetSet")
+
+  def mostRetweetedAcc(currMax: Tweet): Tweet = currMax
+
+  override /**
+    * Returns a list containing all tweets of this set, sorted by retweet count
+    * in descending order. In other words, the head of the resulting list should
+    * have the highest retweet count.
+    *
+    * Hint: the method `remove` on TweetSet will be very useful.
+    * Question: Should we implement this method here, or should it remain abstract
+    * and be implemented in the subclasses?
+    */
+  def descendingByRetweet: TweetList = Nil
 
   override def toString: String = "."
 
@@ -142,10 +167,11 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
   def union(that: TweetSet) = left union that union right incl elem
 
-//  def mostRetweetedAcc(mostRetweetCount: Int, tweets: TweetSet): TweetSet = {
-//    mostRetweetedAcc( mostRetweetedAcc(mostRetweetCount, left)
-//    if(this.elem.retweets > mostRetweetCount)
-//  }
+  def mostRetweeted: Tweet = mostRetweetedAcc(this.elem)
+
+  def mostRetweetedAcc(currMax: Tweet): Tweet =
+      if (elem.retweets > currMax.retweets) right.mostRetweetedAcc(elem)
+      else right.mostRetweetedAcc(currMax)
 
   override def toString: String = "{" + left + elem + right + "}"
 
@@ -154,9 +180,9 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     */
 
   def contains(x: Tweet): Boolean =
-  if (x.text < elem.text) left.contains(x)
-  else if (elem.text < x.text) right.contains(x)
-  else true
+    if (x.text < elem.text) left.contains(x)
+    else if (elem.text < x.text) right.contains(x)
+    else true
 
   def incl(x: Tweet): TweetSet = {
     if (x.text < elem.text) new NonEmpty(elem, left.incl(x), right)
@@ -180,6 +206,7 @@ trait TweetList {
   def head: Tweet
   def tail: TweetList
   def isEmpty: Boolean
+  def append(that: Tweet): TweetList
   def foreach(f: Tweet => Unit): Unit =
     if (!isEmpty) {
       f(head)
@@ -191,10 +218,14 @@ object Nil extends TweetList {
   def head = throw new java.util.NoSuchElementException("head of EmptyList")
   def tail = throw new java.util.NoSuchElementException("tail of EmptyList")
   def isEmpty = true
+
+  def append(that: Tweet) = new Cons(that, Nil)
 }
 
 class Cons(val head: Tweet, val tail: TweetList) extends TweetList {
   def isEmpty = false
+
+  def append(that: Tweet) = new Cons(head, tail append that)
 }
 
 
